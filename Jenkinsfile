@@ -1,35 +1,25 @@
 pipeline {
     agent any
     stages {
-        stage('Setup Environment') {
+        stage('Checkout') {
             steps {
-                
+                git url: 'https://github.com/Kevin98-x/gallery', branch: 'master' // Ensure the branch is correct
+            }
+        }
+        stage('Build') {
+            steps {
                 sh 'npm install'
             }
         }
-        stage('Build and Test') {
+        stage('Test') {
             steps {
-                
-                sh 'npm run build || echo "No build script, skipping"'
-                
-                sh 'npm test || echo "No tests found, skipping"'
+                sh 'npm test'
             }
         }
-        stage('Deploy to Render') {
+        stage('Deploy') {
             steps {
-                
-                sh 'node server.js'
-               
-                echo "Deploy script for Render would go here"
+                sh 'node server.js' // Deploy your app
             }
-        }
-    }
-    post {
-        success {
-            echo 'Pipeline completed successfully.'
-        }
-        failure {
-            echo 'Pipeline failed. Check logs for details.'
         }
     }
 }
