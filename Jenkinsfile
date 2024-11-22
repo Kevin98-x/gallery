@@ -1,12 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage('Setup Environment') {
-            steps {
-                // Install dependencies
-                sh 'npm install'
-            }
-        }
+        
         stage('Build and Test') {
             steps {
                 // Verify application runs successfully
