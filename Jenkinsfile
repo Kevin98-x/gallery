@@ -1,9 +1,12 @@
 pipeline {
     agent any
+    tools{
+        NodeJS 'npm'
+    }
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/Kevin98-x/gallery', branch: 'master' // Ensure the branch is correct
+                git url: 'https://github.com/Kevin98-x/gallery', branch: 'master' 
             }
         }
         stage('Build') {
@@ -18,7 +21,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh 'node server.js' // Deploy your app
+                sh 'node server.js' 
             }
         }
     }
