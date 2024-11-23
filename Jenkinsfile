@@ -1,36 +1,49 @@
 pipeline {
     agent any
     environment {
-        SLACK_WEBHOOK_URL = credentials('https://hooks.slack.com/services/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') 
-        RENDER_URL = 'https://gallery-03ft.onrender.com'      
+        RENDER_URL = 'https://gallery-03ft.onrender.com' 
+        SLACK_CHANNEL = '#kevin_ip1'
+        SLACK_WEBHOOK_URL = 'https://hooks.slack.com/services/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'
+        EMAIL_RECIPIENT = 'kevinmuthama8@gmail.com'
     }
     stages {
-        stage('Build and Test') {
+        stage('Install Dependencies') {
             steps {
-                sh 'npm run build || echo "No build script,skipping "'
-                sh 'npm test || echo "No tests found , skipping" '
+                echo 'Installing dependencies...'
+                sh 'npm install'
+            }
+        }
+        stage('Run Tests') {
+            steps {
+                echo 'Running tests...'
+                sh 'npm test'
             }
         }
         stage('Deploy to Render') {
             steps {
+                echo 'Deploying application to Render...'
+                
                 sh 'node server.js'
-                echo "Deploy script for render would go here"
+            }
+        }
+        stage('Notify Slack') {
+            steps {
+                echo 'Sending Slack notification...'
+                slackSend channel: "${SLACK_CHANNEL}",
+                          message: "Build ${env.BUILD_NUMBER} deployed successfully to ${env.RENDER_URL}",
+                          color: 'good'
             }
         }
     }
     post {
-        success {
-            script {
-                def message = """
-                :white_check_mark: *Build Successful!*
-                - *Build ID*: ${env.BUILD_ID}
-                - *Render URL*: ${env.RENDER_URL}
-                """
-                slackSend(channel: '#YourFirstName_IP1', color: 'good', message: message, webhookUrl: env.SLACK_WEBHOOK_URL)
-            }
+        always {
+            echo 'Cleaning up workspace...'
+            cleanWs()
         }
         failure {
-            echo 'Pipeline failed. Check logs for details.'
+            mail to: "${EMAIL_RECIPIENT}",
+                 subject: "Build ${env.BUILD_NUMBER} Failed on ${env.BRANCH_NAME}",
+                 body: "The build failed for branch ${env.BRANCH_NAME}. Please check the Jenkins logs for details."
         }
     }
 }
